@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ConnectionProvider {
+  GARMIN
+}
+
+enum ConnectionStatus {
+  ACTIVE
+  DISCONNECTED
+  ERROR
+}
+
+enum SyncStatus {
+  RUNNING
+  SUCCEEDED
+  PARTIAL
+  FAILED
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  connections ExternalConnection[]
+  activities  Activity[]
+  syncRuns    SyncRun[]
+}
+
+model ExternalConnection {
+  id                String             @id @default(uuid()) @db.Uuid
+  userId            String             @db.Uuid
+  provider          ConnectionProvider
+  externalAccountId String?
+  status            ConnectionStatus   @default(ACTIVE)
+  connectedAt       DateTime           @default(now()) @db.Timestamptz(3)
+  lastSyncedAt      DateTime?          @db.Timestamptz(3)
+  createdAt         DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(3)
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activities Activity[]
+  syncRuns   SyncRun[]
+
+  // Composite key target for ownership integrity.
+  @@unique([id, userId])
+  @@unique([userId, provider])
+  @@index([userId, status])
+}
+
+model Activity {
+  id                   String @id @default(uuid()) @db.Uuid
+  userId               String @db.Uuid
+  externalConnectionId String @db.Uuid
+
+  externalActivityId String
+  name               String?
+  sportType          String
+
+  startedAt            DateTime @db.Timestamptz(3)
+  sourceStartTimeLocal String?
+
+  distanceM             Float?
+  durationSeconds       Float?
+  movingDurationSeconds Float?
+
+  averageHr      Float?
+  maxHr          Int?
+  averageCadence Float?
+  elevationGainM Float?
+  calories       Int?
+
+  sourceLastSeenAt DateTime? @db.Timestamptz(3)
+  importedAt       DateTime  @default(now()) @db.Timestamptz(3)
+  createdAt        DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  externalConnection ExternalConnection @relation(fields: [externalConnectionId, userId], references: [id, userId], onDelete: Cascade)
+
+  @@unique([externalConnectionId, externalActivityId])
+  @@index([userId, startedAt])
+  @@index([sportType, startedAt])
+}
+
+model SyncRun {
+  id                   String @id @default(uuid()) @db.Uuid
+  userId               String @db.Uuid
+  externalConnectionId String @db.Uuid
+
+  status SyncStatus @default(RUNNING)
+
+  startedAt   DateTime  @default(now()) @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+
+  activitiesFetched Int @default(0)
+  activitiesCreated Int @default(0)
+  activitiesUpdated Int @default(0)
+
+  errorCode    String?
+  errorMessage String?
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  externalConnection ExternalConnection @relation(fields: [externalConnectionId, userId], references: [id, userId], onDelete: Cascade)
+
+  @@index([userId, startedAt])
+  @@index([externalConnectionId, startedAt])
+}
