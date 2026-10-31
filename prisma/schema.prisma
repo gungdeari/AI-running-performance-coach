@@ -76,7 +76,34 @@ model Activity {
   maxHr          Int?
   averageCadence Float?
   elevationGainM Float?
+  elevationLossM Float?
   calories       Int?
+
+  // Garmin Training Effect
+  aerobicTrainingEffect   Float?
+  anaerobicTrainingEffect Float?
+  trainingEffectLabel     String?
+
+  // Heart Rate Time in Zones (seconds)
+  hrTimeInZone1Seconds Float?
+  hrTimeInZone2Seconds Float?
+  hrTimeInZone3Seconds Float?
+  hrTimeInZone4Seconds Float?
+  hrTimeInZone5Seconds Float?
+
+  // Running Power (watts)
+  averagePowerW    Float?
+  maxPowerW        Float?
+  normalizedPowerW Float?
+
+  // Running Dynamics
+  steps                    Int?
+  avgGroundContactTimeMs   Float?
+  avgStrideLengthCm        Float?
+  avgVerticalOscillationCm Float?
+  avgVerticalRatio         Float?
+  maxRunningCadenceSpm     Float?
+  maxSpeedMps              Float?
 
   sourceLastSeenAt DateTime? @db.Timestamptz(3)
   importedAt       DateTime  @default(now()) @db.Timestamptz(3)
