@@ -4,6 +4,7 @@ import { GarminAuthService } from './garmin-auth.service';
 import { GarminApiClient } from './garmin-api.client';
 import { GarminPaginationService } from './garmin-pagination.service';
 import { ActivityPersistenceService } from './activity-persistence.service';
+import { GarminSyncService } from './garmin-sync.service';
 
 @Module({
   imports: [PrismaModule],
@@ -12,12 +13,14 @@ import { ActivityPersistenceService } from './activity-persistence.service';
     GarminApiClient,
     GarminPaginationService,
     ActivityPersistenceService,
+    GarminSyncService,
   ],
   exports: [
     GarminAuthService,
     GarminApiClient,
     GarminPaginationService,
     ActivityPersistenceService,
+    GarminSyncService,
   ],
 })
 export class GarminModule {}

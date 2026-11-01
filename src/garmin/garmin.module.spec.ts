@@ -2,7 +2,6 @@ jest.mock('../prisma/prisma.service', () => ({
   PrismaService: class MockPrismaService {},
 }));
 
-
 import { Test } from '@nestjs/testing';
 
 import { GarminModule } from './garmin.module';
@@ -11,6 +10,7 @@ import { GarminApiClient } from './garmin-api.client';
 import { GarminPaginationService } from './garmin-pagination.service';
 import { ActivityPersistenceService } from './activity-persistence.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { GarminSyncService } from './garmin-sync.service';
 
 describe('GarminModule', () => {
   it('should provide Garmin services', async () => {
@@ -33,13 +33,17 @@ describe('GarminModule', () => {
       GarminApiClient,
     );
 
-    expect(
-      moduleRef.get(GarminPaginationService),
-    ).toBeInstanceOf(GarminPaginationService);
+    expect(moduleRef.get(GarminPaginationService),).toBeInstanceOf(
+      GarminPaginationService
+    );
 
-    expect(
-      moduleRef.get(ActivityPersistenceService),
-    ).toBeInstanceOf(ActivityPersistenceService);
+    expect(moduleRef.get(GarminSyncService),).toBeInstanceOf(
+      GarminSyncService
+    );
+
+    expect(moduleRef.get(ActivityPersistenceService),).toBeInstanceOf(
+      ActivityPersistenceService
+    );
 
     await moduleRef.close();
   });
