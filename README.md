@@ -1,98 +1,325 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Running Performance Coach
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A personal running performance platform powered by Garmin activity data. The backend is designed to ingest, validate, normalize, and persist activity data as the foundation for future performance analysis and personalized running coaching.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+> **Development status:** Backend foundation and Garmin activity ingestion are implemented. The project is currently in the backend integration stage.
 
-## Description
+## Overview
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Running Performance Coach aims to help track running progress and support data-driven training decisions using personal Garmin activity history.
 
-## Project setup
+The planned platform consists of:
+
+- **Backend:** Activity ingestion, data persistence, performance analysis, and coaching logic.
+- **Web Dashboard:** Activity history, performance trends, and race goal analysis.
+- **Telegram Bot:** Quick access to training information and progress.
+- **AI Coaching:** Explanations and recommendations grounded in activity history, goals, and user feedback.
+
+The current implementation focuses on the backend foundation and Garmin activity ingestion. Future capabilities are not considered implemented until their respective development stages are completed.
+
+## Technology Stack
+
+| Component | Technology |
+|---|---|
+| Backend Framework | NestJS |
+| Language | TypeScript |
+| Runtime | Node.js |
+| Database | PostgreSQL 16 |
+| ORM | Prisma 7 |
+| Database Adapter | `@prisma/adapter-pg` |
+| Activity Source | Garmin Connect Personal API |
+| Testing | Jest |
+| Containerization | Docker Compose |
+
+## Current Implementation
+
+### Backend Foundation
+
+- NestJS application structure.
+- PostgreSQL database running through Docker Compose.
+- Prisma 7 database integration.
+- Environment-based configuration.
+- Database connectivity health check.
+
+### Garmin Integration
+
+- Garmin Personal API authentication.
+- Garmin activity API client.
+- Activity pagination.
+- Runtime payload validation.
+- Activity normalization.
+- Activity persistence to PostgreSQL.
+- Duplicate prevention using database uniqueness constraints.
+- Synchronization run tracking.
+- Synchronization status and activity count recording.
+
+### Data Integrity
+
+- Invalid activity payloads are rejected and skipped.
+- Missing optional metrics are stored as `null`, not artificially converted to zero.
+- Duplicate external activities are skipped.
+- User and external connection ownership are enforced through database relations.
+- Only selected activity fields are persisted; raw GPS and unnecessary personal payload fields are not stored.
+
+### Current Limitations
+
+- Activity persistence is currently insert-only. Existing activities are not updated.
+- Synchronization is implemented as a backend service, but no production HTTP endpoint or scheduled trigger is available yet.
+- Garmin ingestion currently retrieves activity history through pagination; it is not yet an incremental API fetch based on the last synchronization timestamp.
+- Activity types are stored using their Garmin sport type. Running-specific filtering and performance calculations belong to subsequent development stages.
+- Web dashboard, Telegram integration, and AI coaching are not implemented yet.
+
+## Prerequisites
+
+Ensure the following tools are installed:
+
+- Node.js (tested with v24.14.1)
+- npm
+- Docker Desktop
+- Git
+- Garmin Personal API access and a valid API key
+
+## Project Setup
+
+Clone the repository:
 
 ```bash
-$ npm install
+git clone https://github.com/gungdeari/AI-running-performance-coach.git
+cd AI-running-performance-coach
 ```
 
-## Compile and run the project
+Install dependencies:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+Create the local environment file:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.example .env
 ```
 
-## Deployment
+Configure the required environment variables in `.env`:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```dotenv
+# PostgreSQL / Docker
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_DB=running_performance_coach
+POSTGRES_URL=postgresql://USER:PASSWORD@localhost:5432/DATABASE
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+# Prisma
+DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/DATABASE
+
+# Garmin Personal API
+GARMIN_PERSONAL_API_KEY=your_garmin_personal_api_key
+```
+
+Use matching PostgreSQL credentials in `POSTGRES_URL` and `DATABASE_URL`.
+
+**Security:** Never commit `.env` or expose Garmin API credentials. The `.env.example` file contains placeholders only.
+
+## Database Setup
+
+Start PostgreSQL using Docker Compose:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker compose up -d
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Check the container status:
 
-## Resources
+```bash
+docker compose ps
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+Generate the Prisma Client:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npx prisma generate
+```
 
-## Support
+Apply the existing database migrations:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+npx prisma migrate deploy
+```
 
-## Stay in touch
+Check migration status:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+npx prisma migrate status
+```
+
+The application uses PostgreSQL as its persistent data store.
+
+## Running the Application
+
+Start in development mode:
+
+```bash
+npm run start:dev
+```
+
+Build the application:
+
+```bash
+npm run build
+```
+
+Start the compiled application:
+
+```bash
+npm run start:prod
+```
+
+### Database Health Check
+
+The backend provides a database connectivity endpoint:
+
+```http
+GET /health/database
+```
+
+A successful response:
+
+```json
+{
+  "status": "ok",
+  "database": "connected"
+}
+```
+
+## Garmin Synchronization
+
+Garmin synchronization is currently orchestrated through `GarminSyncService`.
+
+The implemented flow is:
+
+```text
+Garmin Personal API
+        |
+        v
+Garmin Authentication
+        |
+        v
+Activity API & Pagination
+        |
+        v
+Payload Validation
+        |
+        v
+Activity Normalization
+        |
+        v
+Activity Persistence
+        |
+        v
+PostgreSQL
+        |
+        v
+Sync Run Result
+```
+
+Each synchronization run records its status and activity counts.
+
+Supported synchronization statuses:
+
+- `RUNNING`
+- `SUCCEEDED`
+- `PARTIAL`
+- `FAILED`
+
+The service verifies the user's active Garmin connection before synchronization.
+
+**Note:** The synchronization service has been verified against the real Garmin Personal API. A production endpoint or scheduler to trigger synchronization has not yet been implemented.
+
+## Testing
+
+Run unit and module tests:
+
+```bash
+npm test -- --runInBand
+```
+
+Run database integration tests:
+
+```bash
+npm run test:integration
+```
+
+Build the application:
+
+```bash
+npm run build
+```
+
+Check production dependency vulnerabilities:
+
+```bash
+npm audit --omit=dev
+```
+
+Integration tests require a reachable PostgreSQL database configured through `DATABASE_URL`.
+
+## Development Progress
+
+| Stage | Description | Status |
+|---|---|---|
+| 00 | Project Baseline & Governance | Approved |
+| 01 | Architecture & Technology Stack | Approved |
+| 02 | Database Design & API Contract | Approved |
+| 03 | Garmin Integration & Activity Ingestion | In progress |
+| 04 | Performance Metrics Engine | Planned |
+| 05 | Coaching Specification & Training Engine | Planned |
+| 06 | Feedback, Strength Training & Goals | Planned |
+| 07 | Web Application & Dashboard | Planned |
+| 08 | Telegram Bot Integration | Planned |
+| 09 | Testing, Deployment & Final Integration | Planned |
+
+## Project Structure
+
+```text
+src/
+├── garmin/
+│   ├── garmin-auth.service.ts
+│   ├── garmin-api.client.ts
+│   ├── garmin-pagination.service.ts
+│   ├── garmin-activity.validator.ts
+│   ├── garmin-activity.normalizer.ts
+│   ├── garmin-activity.parser.ts
+│   ├── garmin-sync.service.ts
+│   ├── activity-persistence.service.ts
+│   ├── garmin.types.ts
+│   ├── garmin.module.ts
+│   └── *.spec.ts
+├── prisma/
+│   ├── prisma.module.ts
+│   └── prisma.service.ts
+├── app.controller.ts
+├── app.controller.spec.ts
+├── app.service.ts
+├── app.module.ts
+└── main.ts
+
+prisma/
+├── schema.prisma
+└── migrations/
+
+test/
+└── jest-integration.json
+```
+
+## Development Principles
+
+- Keep the implementation aligned with the approved project scope.
+- Prefer deterministic and testable business logic.
+- Preserve data integrity and explicit user ownership.
+- Avoid unsupported performance or health-related claims.
+- Keep sensitive credentials and personal activity data secure.
+- Introduce new features only when required by the approved development roadmap.
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This project is developed as a personal running performance and coaching platform.
