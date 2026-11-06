@@ -91,3 +91,34 @@ export interface PeriodComparison {
     averagePaceSecondsPerKm: PeriodComparisonMetric;
     averageMovingPaceSecondsPerKm: PeriodComparisonMetric;
 }
+
+export type PersonalRecordActivityInput = Omit<
+  MetricActivityInput,
+  'id'
+> & {
+  id: string;
+};
+
+export type PersonalRecordTargetKey =
+    | '1k'
+    | '1mile'
+    | '5k'
+    | '10k'
+    | 'half_marathon'
+    | 'marathon';
+
+export interface PersonalRecordEntry {
+    activityId: string;
+    distanceM: number;
+    durationSeconds: number;
+    startedAt: string | null;
+}
+
+export interface PersonalRecordResult {
+    key: PersonalRecordTargetKey;
+    label: string;
+    targetDistanceM: number;
+    minDistanceM: number;
+    maxDistanceM: number;
+    record: PersonalRecordEntry | null;
+}
